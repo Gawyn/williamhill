@@ -1,0 +1,3 @@
+module Williamhill
+  VERSION = "0.0.1"
+end
