@@ -14,4 +14,9 @@ Gem::Specification.new do |gem|
   gem.name          = "williamhill"
   gem.require_paths = ["lib"]
   gem.version       = Williamhill::VERSION
+
+  gem.add_runtime_dependency 'nokogiri'
+  gem.add_runtime_dependency 'activesupport'
+  gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'webmock'
 end
