@@ -28,84 +28,119 @@ describe WilliamHill do
     end
     
     describe "instance methods" do
-      describe :get_competitions do
+      describe "with real requests" do
         before :all do
-          stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
-          @events = subject.get_competitions
+          WebMock.allow_net_connect!
+          sport_id = WilliamHill.get_sports.values.first 
+          @william_hill = WilliamHill.new(sport_id)
         end
 
-        it "should return an Array" do
-          @events.class.should == Array
+        describe :get_competitions do
+          it "should return the correct type" do
+            @william_hill.get_competitions.class.should == Array
+          end
         end
 
-        it "should return the correct number of events" do
-          @events.count.should == 2
+        describe :get_markets do
+          it "should return the correct type" do
+            @william_hill.get_markets.class.should == Array
+          end
         end
 
-        it "should return the correct events" do
-          @events.should == ["Olympics - Women&apos;s Basketball", "Olympics - Men&apos;s Basketball"]
+        describe :get_odds do
+          it "should return the correct type" do
+            market = @william_hill.get_markets.first
+            @william_hill.get_odds(market).class.should == Array
+          end
+        end
+
+        describe :get_full_markets do
+          it "should return the correct type" do
+            @william_hill.get_full_markets.class.should == Array
+          end
         end
       end
 
-      describe :get_markets do
-        context "markets from all events" do
+      describe "with stubbed requests" do
+        describe :get_competitions do
           before :all do
             stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
-            @markets = subject.get_markets
+            @events = subject.get_competitions
           end
 
-          it "should return the correct number of markets" do
-            @markets.count.should == 14
+          it "should return an Array" do
+            @events.class.should == Array
+          end
+
+          it "should return the correct number of events" do
+            @events.count.should == 2
+          end
+
+          it "should return the correct events" do
+            @events.should == ["Olympics - Women&apos;s Basketball", "Olympics - Men&apos;s Basketball"]
           end
         end
 
-        context "markets from a given event" do
+        describe :get_markets do
+          context "markets from all events" do
+            before :all do
+              stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
+              @markets = subject.get_markets
+            end
+
+            it "should return the correct number of markets" do
+              @markets.count.should == 14
+            end
+          end
+
+          context "markets from a given event" do
+            before :all do
+              stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
+              @markets = subject.get_markets(subject.get_competitions.first)
+            end
+
+            it "should return the correct markets" do
+              @markets.should == ["China v Czech Republic - Money Line", "Russia v Canada - Money Line", "Canada v Russia - Money Line", "Turkey v Angola - Money Line", "USA v Croatia - Money Line", "France v Brazil - Money Line", "Brazil v France - Money Line", "Australia v Great Britain - Money Line"]
+            end
+          end
+        end
+
+        describe :get_odds do
           before :all do
             stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
-            @markets = subject.get_markets(subject.get_competitions.first)
+            @odds = subject.get_odds(subject.get_markets.first)
           end
 
-          it "should return the correct markets" do
-            @markets.should == ["China v Czech Republic - Money Line", "Russia v Canada - Money Line", "Canada v Russia - Money Line", "Turkey v Angola - Money Line", "USA v Croatia - Money Line", "France v Brazil - Money Line", "Brazil v France - Money Line", "Australia v Great Britain - Money Line"]
+          it "should return a hash with the odds" do
+            @odds.should == [{:name=>"China", :odds=>"2.15"}, {:name=>"Czech Republic", :odds=>"1.62"}]
           end
         end
-      end
 
-      describe :get_odds do
-        before :all do
-          stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
-          @odds = subject.get_odds(subject.get_markets.first)
-        end
+        describe :get_full_markets do
+          before :all do
+            stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
+            @full_markets = subject.get_full_markets
+          end
 
-        it "should return a hash with the odds" do
-          @odds.should == [{:name=>"China", :odds=>"2.15"}, {:name=>"Czech Republic", :odds=>"1.62"}]
-        end
-      end
+          it "should parse correctly the id" do
+            @full_markets.last[:id].should == "39371471"
+          end
 
-      describe :get_full_markets do
-        before :all do
-          stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
-          @full_markets = subject.get_full_markets
-        end
+          it "should parse correctly the name" do
+            @full_markets.last[:name].should == "Argentina v Lithuania - Money Line"
+          end
 
-        it "should parse correctly the id" do
-          @full_markets.last[:id].should == "39371471"
-        end
+          it "should parse correctly the odds" do
+            @full_markets.last[:odds].should == [{:id=>"165143361", :name=>"Lithuania", :odds=>"2.25"}, {:id=>"165143364", :name=>"Argentina", :odds=>"1.57"}]
+          end
 
-        it "should parse correctly the name" do
-          @full_markets.last[:name].should == "Argentina v Lithuania - Money Line"
-        end
+          it "should parse correctly the time" do
+            @full_markets.last[:time].should == "2012-07-29 21:15:00 UTC".to_time
+          end
 
-        it "should parse correctly the odds" do
-          @full_markets.last[:odds].should == [{:id=>"165143361", :name=>"Lithuania", :odds=>"2.25"}, {:id=>"165143364", :name=>"Argentina", :odds=>"1.57"}]
-        end
-
-        it "should parse correctly the time" do
-          @full_markets.last[:time].should == "2012-07-29 21:15:00 UTC".to_time
-        end
-
-        it "should parse correctly the bet limit time" do
-          @full_markets.last[:bet_limit_time].should == "2012-07-29 21:15:00 UTC".to_time
+          it "should parse correctly the bet limit time" do
+            @full_markets.last[:bet_limit_time].should == "2012-07-29 21:15:00 UTC".to_time
+          end
         end
       end
     end
