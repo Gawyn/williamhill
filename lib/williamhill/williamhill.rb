@@ -36,7 +36,7 @@ class WilliamHill
     end
   end
 
-  def get_odds(market)
+  def get_participants(market)
     xml_part = @xml.search("market[name='#{market}']")
     xml_part.search("participant").map do |participant|
       { :name => participant[:name], :odds => participant[:oddsDecimal] }    
@@ -55,7 +55,7 @@ class WilliamHill
         { :id => participant[:id], :name => participant[:name], :odds => participant[:oddsDecimal] }    
       end
 
-      { :id => id, :name => name, :odds => odds, :time => time, :bet_limit_time => bet_limit_time }
+      { :id => id, :name => name, :participants => odds, :time => time, :bet_limit_time => bet_limit_time }
     end
   end
 

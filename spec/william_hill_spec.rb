@@ -47,10 +47,10 @@ describe WilliamHill do
           end
         end
 
-        describe :get_odds do
+        describe :get_participants do
           it "should return the correct type" do
             market = @william_hill.get_markets.first
-            @william_hill.get_odds(market).class.should == Array
+            @william_hill.get_participants(market).class.should == Array
           end
         end
 
@@ -105,14 +105,14 @@ describe WilliamHill do
           end
         end
 
-        describe :get_odds do
+        describe :get_participants do
           before :all do
             stub_request(:any, /.*/).to_return(:body => mock_output("events.xml"))
-            @odds = subject.get_odds(subject.get_markets.first)
+            @participants = subject.get_participants(subject.get_markets.first)
           end
 
           it "should return a hash with the odds" do
-            @odds.should == [{:name=>"China", :odds=>"2.15"}, {:name=>"Czech Republic", :odds=>"1.62"}]
+            @participants.should == [{:name=>"China", :odds=>"2.15"}, {:name=>"Czech Republic", :odds=>"1.62"}]
           end
         end
 
@@ -130,8 +130,8 @@ describe WilliamHill do
             @full_markets.last[:name].should == "Argentina v Lithuania - Money Line"
           end
 
-          it "should parse correctly the odds" do
-            @full_markets.last[:odds].should == [{:id=>"165143361", :name=>"Lithuania", :odds=>"2.25"}, {:id=>"165143364", :name=>"Argentina", :odds=>"1.57"}]
+          it "should parse correctly the participants" do
+            @full_markets.last[:participants].should == [{:id=>"165143361", :name=>"Lithuania", :odds=>"2.25"}, {:id=>"165143364", :name=>"Argentina", :odds=>"1.57"}]
           end
 
           it "should parse correctly the time" do
